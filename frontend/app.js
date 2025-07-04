@@ -8,7 +8,7 @@ const filterBtns = document.querySelectorAll('.filter-btn');
 
 let currentFilter = '';
 
-// Carga inicial de tareas
+// -------- Inicializar y cargar tareas --------
 async function fetchTasks() {
   clearError();
   try {
@@ -22,7 +22,7 @@ async function fetchTasks() {
   }
 }
 
-// Renderiza la lista de tareas
+// -------- Render de tareas (list + botones) --------
 function renderTasks(tasks) {
   list.innerHTML = '';
   if (!tasks.length) {
@@ -33,13 +33,14 @@ function renderTasks(tasks) {
     const li = document.createElement('li');
     li.innerHTML = `
       <span>${t.title} [${t.priority}]</span>
+      <button class="edit-btn" data-id="${t.id}">✏️</button>
       <button class="delete-btn" data-id="${t.id}">🗑️</button>
     `;
     list.appendChild(li);
   });
 }
 
-// Filtros por prioridad
+// -------- Filtros --------
 filterBtns.forEach(btn => {
   btn.addEventListener('click', () => {
     filterBtns.forEach(b => b.classList.remove('active'));
@@ -49,7 +50,7 @@ filterBtns.forEach(btn => {
   });
 });
 
-// Validación y envío de nueva tarea
+// -------- Añadir nueva tarea --------
 form.addEventListener('submit', async e => {
   e.preventDefault();
   clearError();
@@ -73,35 +74,83 @@ form.addEventListener('submit', async e => {
       titleInput.value = '';
       fetchTasks();
     }
-  } catch (e) {
-    console.error(e);
+  } catch {
     showError('Error de conexión');
   }
 });
 
-// Eliminar tarea
+// -------- Eliminar, Iniciar Edición, Guardar y Cancelar --------
 list.addEventListener('click', async e => {
-  if (!e.target.classList.contains('delete-btn')) return;
-  clearError();
+  const li = e.target.closest('li');
   const id = e.target.dataset.id;
-  try {
-    const res = await fetch(`${API}/${id}`, { method: 'DELETE' });
-    const data = await res.json();
-    if (!res.ok) {
-      showError(data.error || 'Error al eliminar tarea');
-    } else {
-      fetchTasks();
+
+  // Eliminar
+  if (e.target.classList.contains('delete-btn')) {
+    clearError();
+    try {
+      const res = await fetch(`${API}/${id}`, { method: 'DELETE' });
+      const data = await res.json();
+      if (!res.ok) showError(data.error || 'Error al eliminar tarea');
+      else fetchTasks();
+    } catch {
+      showError('Error de conexión');
     }
-  } catch (e) {
-    console.error(e);
-    showError('Error de conexión');
+    return;
+  }
+
+  // Iniciar edición
+  if (e.target.classList.contains('edit-btn')) {
+    clearError();
+    const span = li.querySelector('span');
+    const [titleText, priorityText] = span.textContent.split(' [');
+    const currentPriority = priorityText.replace(']', '');
+    li.innerHTML = `
+      <input class="edit-title" value="${titleText.trim()}" />
+      <select class="edit-priority">
+        <option value="baja"${currentPriority==='baja'?' selected':''}>Baja</option>
+        <option value="media"${currentPriority==='media'?' selected':''}>Media</option>
+        <option value="alta"${currentPriority==='alta'?' selected':''}>Alta</option>
+      </select>
+      <button class="save-btn" data-id="${id}">Guardar</button>
+      <button class="cancel-btn">✖️</button>
+    `;
+    return;
+  }
+
+  // Guardar edición
+  if (e.target.classList.contains('save-btn')) {
+    clearError();
+    const title = li.querySelector('.edit-title').value.trim();
+    const priority = li.querySelector('.edit-priority').value;
+    if (!title) {
+      showError('El título es obligatorio');
+      return;
+    }
+    try {
+      const res = await fetch(`${API}/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ title, priority })
+      });
+      const data = await res.json();
+      if (!res.ok) handleErrors(data);
+      else fetchTasks();
+    } catch {
+      showError('Error de conexión');
+    }
+    return;
+  }
+
+  // Cancelar edición
+  if (e.target.classList.contains('cancel-btn')) {
+    fetchTasks();
+    return;
   }
 });
 
-// Procesa errores del backend (Marshmallow)
+// -------- Manejo de errores --------
 function handleErrors(data) {
   if (data.errors) {
-    // Unir todos los mensajes de los campos
     const msgs = Object.values(data.errors).flat();
     showError(msgs.join(' • '));
   } else if (data.error) {
@@ -111,19 +160,17 @@ function handleErrors(data) {
   }
 }
 
-// Muestra un mensaje de error bajo el formulario
 function showError(msg) {
   errorDiv.innerHTML = `<div class="error-message">${msg}</div>`;
 }
 
-// Limpia el contenedor de errores
 function clearError() {
   errorDiv.textContent = '';
 }
 
-// Limpiar error al modificar campos
+// Limpiar error al editar campos
 titleInput.addEventListener('input', clearError);
 prioritySelect.addEventListener('change', clearError);
 
-// Inicializar
+// -------- Ejecutar --------
 fetchTasks();
