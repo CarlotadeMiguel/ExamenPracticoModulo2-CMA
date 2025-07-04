@@ -8,9 +8,9 @@ const filterBtns = document.querySelectorAll('.filter-btn');
 
 let currentFilter = '';
 
-// Carga inicial de tareas
+// -------- Inicializar y cargar tareas --------
 async function fetchTasks() {
-  errorDiv.textContent = '';
+  clearError();
   try {
     const url = currentFilter ? `${API}?priority=${currentFilter}` : API;
     const res = await fetch(url);
@@ -18,10 +18,11 @@ async function fetchTasks() {
     renderTasks(tasks);
   } catch (e) {
     console.error(e);
-    errorDiv.textContent = 'Error al cargar tareas';
+    showError('Error al cargar tareas');
   }
 }
 
+// -------- Render de tareas (list + botones) --------
 function renderTasks(tasks) {
   list.innerHTML = '';
   if (!tasks.length) {
@@ -32,71 +33,144 @@ function renderTasks(tasks) {
     const li = document.createElement('li');
     li.innerHTML = `
       <span>${t.title} [${t.priority}]</span>
-      <button class="delete-btn" data-id="${t.id}">Eliminar</button>
+      <button class="edit-btn" data-id="${t.id}">✏️</button>
+      <button class="delete-btn" data-id="${t.id}">🗑️</button>
     `;
     list.appendChild(li);
   });
 }
 
-// Manejo de filtro por prioridad
+// -------- Filtros --------
 filterBtns.forEach(btn => {
   btn.addEventListener('click', () => {
-    // Resaltar botón activo
     filterBtns.forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
-    // Actualizar filtro y recargar tareas
     currentFilter = btn.dataset.filter;
     fetchTasks();
   });
 });
 
-// Enviar nueva tarea
+// -------- Añadir nueva tarea --------
 form.addEventListener('submit', async e => {
   e.preventDefault();
-  errorDiv.textContent = '';
+  clearError();
   const title = titleInput.value.trim();
   if (!title) {
-    errorDiv.textContent = 'El título es obligatorio';
+    showError('El título es obligatorio');
     return;
   }
   const priority = prioritySelect.value;
+
   try {
     const res = await fetch(API, {
       method: 'POST',
-      headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({title, priority})
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ title, priority })
     });
     const data = await res.json();
     if (!res.ok) {
-      errorDiv.textContent = data.error || 'Error al agregar tarea';
+      handleErrors(data);
     } else {
       titleInput.value = '';
       fetchTasks();
     }
-  } catch (e) {
-    console.error(e);
-    errorDiv.textContent = 'Error de conexión';
+  } catch {
+    showError('Error de conexión');
   }
 });
 
-// Eliminar tarea
+// -------- Eliminar, Iniciar Edición, Guardar y Cancelar --------
 list.addEventListener('click', async e => {
+  const li = e.target.closest('li');
+  const id = e.target.dataset.id;
+
+  // Eliminar
   if (e.target.classList.contains('delete-btn')) {
-    const id = e.target.dataset.id;
+    clearError();
     try {
-      const res = await fetch(`${API}/${id}`, {method:'DELETE'});
-      if (!res.ok) {
-        const data = await res.json();
-        errorDiv.textContent = data.error || 'Error al eliminar tarea';
-      } else {
-        fetchTasks();
-      }
-    } catch (e) {
-      console.error(e);
-      errorDiv.textContent = 'Error de conexión';
+      const res = await fetch(`${API}/${id}`, { method: 'DELETE' });
+      const data = await res.json();
+      if (!res.ok) showError(data.error || 'Error al eliminar tarea');
+      else fetchTasks();
+    } catch {
+      showError('Error de conexión');
     }
+    return;
+  }
+
+  // Iniciar edición
+  if (e.target.classList.contains('edit-btn')) {
+    clearError();
+    const span = li.querySelector('span');
+    const [titleText, priorityText] = span.textContent.split(' [');
+    const currentPriority = priorityText.replace(']', '');
+    li.innerHTML = `
+      <input class="edit-title" value="${titleText.trim()}" />
+      <select class="edit-priority">
+        <option value="baja"${currentPriority==='baja'?' selected':''}>Baja</option>
+        <option value="media"${currentPriority==='media'?' selected':''}>Media</option>
+        <option value="alta"${currentPriority==='alta'?' selected':''}>Alta</option>
+      </select>
+      <button class="save-btn" data-id="${id}">Guardar</button>
+      <button class="cancel-btn">✖️</button>
+    `;
+    return;
+  }
+
+  // Guardar edición
+  if (e.target.classList.contains('save-btn')) {
+    clearError();
+    const title = li.querySelector('.edit-title').value.trim();
+    const priority = li.querySelector('.edit-priority').value;
+    if (!title) {
+      showError('El título es obligatorio');
+      return;
+    }
+    try {
+      const res = await fetch(`${API}/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ title, priority })
+      });
+      const data = await res.json();
+      if (!res.ok) handleErrors(data);
+      else fetchTasks();
+    } catch {
+      showError('Error de conexión');
+    }
+    return;
+  }
+
+  // Cancelar edición
+  if (e.target.classList.contains('cancel-btn')) {
+    fetchTasks();
+    return;
   }
 });
 
-// Inicializar
+// -------- Manejo de errores --------
+function handleErrors(data) {
+  if (data.errors) {
+    const msgs = Object.values(data.errors).flat();
+    showError(msgs.join(' • '));
+  } else if (data.error) {
+    showError(data.error);
+  } else {
+    showError('Error desconocido');
+  }
+}
+
+function showError(msg) {
+  errorDiv.innerHTML = `<div class="error-message">${msg}</div>`;
+}
+
+function clearError() {
+  errorDiv.textContent = '';
+}
+
+// Limpiar error al editar campos
+titleInput.addEventListener('input', clearError);
+prioritySelect.addEventListener('change', clearError);
+
+// -------- Ejecutar --------
 fetchTasks();

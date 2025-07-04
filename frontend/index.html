@@ -9,9 +9,8 @@
   <div class="container">
     <h1>Gestor de Tareas</h1>
 
-    <!-- Formulario -->
     <form id="taskForm">
-      <input id="title" type="text" placeholder="Título de la tarea" />
+      <input id="title" type="text" placeholder="Título de la tarea" required />
       <select id="priority">
         <option value="baja">Baja</option>
         <option value="media">Media</option>
@@ -21,7 +20,6 @@
     </form>
     <div id="error" class="error"></div>
 
-    <!-- Filtros -->
     <div class="filters">
       <button data-filter="" class="filter-btn active">Todas</button>
       <button data-filter="alta" class="filter-btn">Alta</button>
@@ -29,7 +27,6 @@
       <button data-filter="baja" class="filter-btn">Baja</button>
     </div>
 
-    <!-- Lista de tareas -->
     <ul id="taskList"></ul>
   </div>
 
