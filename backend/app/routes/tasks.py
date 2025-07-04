@@ -2,9 +2,8 @@
 import os
 from datetime import datetime
 from flask import Blueprint, request, jsonify
-from app.extensions import db
-from app.models.task import Task
-
+from ..extensions import db
+from ..models.task import Task
 tasks_bp = Blueprint('tasks', __name__)
 
 @tasks_bp.route('', methods=['GET'])
