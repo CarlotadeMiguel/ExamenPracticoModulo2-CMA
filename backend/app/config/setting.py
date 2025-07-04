@@ -1,4 +1,4 @@
-#backend/app/config/setting.py
+# backend/app/config/setting.py
 import os
 basedir = os.path.abspath(os.path.dirname(__file__))
 
@@ -10,5 +10,8 @@ class DevelopmentConfig(Config):
     DEBUG = True
     SQLALCHEMY_DATABASE_URI = os.getenv(
         'DATABASE_URI',
-        'sqlite:///' + os.path.join(basedir, '..', 'instance', 'app.db')
+        'sqlite:///' + os.path.abspath(
+            os.path.join(basedir, '..', '..', 'instance', 'app.db')
+        )
     )
+

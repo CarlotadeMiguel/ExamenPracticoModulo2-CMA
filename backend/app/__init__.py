@@ -1,26 +1,24 @@
 # backend/app/__init__.py
+import os
+from dotenv import load_dotenv
+
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
-from dotenv import load_dotenv
-import os
+from .config.setting import DevelopmentConfig
 
 db = SQLAlchemy()
 migrate = Migrate()
 
 def create_app():
-    load_dotenv(dotenv_path=os.path.join(os.getcwd(), '.env'))
+    load_dotenv()
 
     app = Flask(__name__)
-    app.config.from_object(os.getenv('FLASK_ENV') == 'development'
-        and "app.config.setting.DevelopmentConfig"
-        or "app.config.setting.Config"
-    )
+    app.config.from_object(DevelopmentConfig)
 
     db.init_app(app)
     migrate.init_app(app, db)
 
     from .routes.tasks import tasks_bp
     app.register_blueprint(tasks_bp, url_prefix='/api')
-
     return app
