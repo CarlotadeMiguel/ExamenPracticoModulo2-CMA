@@ -1,0 +1,28 @@
+body {
+    font-family: Arial, sans-serif;
+    margin: 20px;
+}
+
+.container {
+    max-width: 600px;
+    margin: auto;
+}
+
+form {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 20px;
+}
+
+.error {
+    color: red;
+    margin-top: 4px;
+}
+
+#taskList li {
+    padding: 8px;
+    border: 1px solid #ddd;
+    margin-bottom: 6px;
+    display: flex;
+    justify-content: space-between;
+}
