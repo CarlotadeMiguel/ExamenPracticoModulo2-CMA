@@ -1,9 +1,10 @@
 # backend/app/routes/tasks.py
-import os
+
 from datetime import datetime
 from flask import Blueprint, request, jsonify
 from ..extensions import db
 from ..models.task import Task
+
 tasks_bp = Blueprint('tasks', __name__)
 
 @tasks_bp.route('', methods=['GET'])
@@ -34,7 +35,6 @@ def add_task():
     title = (data.get('title') or '').strip()
     priority = (data.get('priority') or '').strip()
 
-    # Validaciones
     if not title:
         return jsonify({'error': 'El título es obligatorio'}), 400
     if priority not in ('baja', 'media', 'alta'):
