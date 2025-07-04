@@ -1,65 +1,24 @@
 body {
   font-family: Arial, sans-serif;
-  margin: 20px;
 }
-.container {
-  max-width: 600px;
-  margin: auto;
-}
-form {
+.list-group-item {
   display: flex;
-  gap: 8px;
-  margin-bottom: 10px;
-}
-
-.error {
-  color: red;
-  margin-top: 4px;
-}
-.filters {
-    margin-bottom: 20px;
-}
-
-.filter-btn {
-    margin-right: 4px;
-    padding: 4px 8px;
-}
-
-.filter-btn.active {
-    background: #007BFF;
-    color: #fff;
-    border: none;
-}
-#taskList li {
-  display: flex;
-  gap: 8px;
+  justify-content: space-between;
   align-items: center;
-  padding: 8px;
-  border: 1px solid #ddd;
-  margin-bottom: 6px;
 }
-input.edit-title {
-  flex: 1;
-  padding: 4px;
-}
-select.edit-priority {
-  padding: 4px;
-}
-button.save-btn {
-  background-color: #28a745;
-  color: #fff;
+.delete-btn,
+.edit-btn,
+.save-btn,
+.cancel-btn {
   border: none;
-  padding: 4px 8px;
+  background: none;
+  font-size: 1rem;
   cursor: pointer;
 }
-button.cancel-btn {
-  background-color: #dc3545;
-  color: #fff;
-  border: none;
-  padding: 4px 8px;
-  cursor: pointer;
+.delete-btn:hover {
+  color: #dc3545;
 }
-.error-message {
-  color: red;
-  margin-bottom: 8px;
+.filter-btn.active {
+  background-color: #0d6efd;
+  color: #fff;
 }
