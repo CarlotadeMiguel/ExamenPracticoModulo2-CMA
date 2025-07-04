@@ -11,7 +11,7 @@ body {
 form {
     display: flex;
     gap: 8px;
-    margin-bottom: 20px;
+    margin-bottom: 10px;
 }
 
 .error {
@@ -19,10 +19,25 @@ form {
     margin-top: 4px;
 }
 
+.filters {
+    margin-bottom: 20px;
+}
+
+.filter-btn {
+    margin-right: 4px;
+    padding: 4px 8px;
+}
+
+.filter-btn.active {
+    background: #007BFF;
+    color: #fff;
+    border: none;
+}
+
 #taskList li {
+    display: flex;
+    justify-content: space-between;
     padding: 8px;
     border: 1px solid #ddd;
     margin-bottom: 6px;
-    display: flex;
-    justify-content: space-between;
 }
