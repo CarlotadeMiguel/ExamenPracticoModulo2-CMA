@@ -6,7 +6,7 @@ from app.models.task import Task
 
 @pytest.fixture
 def app_client(tmp_path, monkeypatch):
-    # Crea un app de prueba con base de datos en memoria
+    # Crea una app de prueba con base de datos en memoria
     test_app = create_app()
     test_app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///:memory:'
     test_app.config['TESTING'] = True
